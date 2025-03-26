@@ -23,13 +23,13 @@ matrix operator*(const matrix& m1, const matrix& m2);
 
 #define TITLE "DX11"
 
-int WINAPI WinMain(HINSTANCE instance, HINSTANCE previous_instance, LPSTR cli, int show_state) {
+int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
   WNDCLASSA window_class = {0, DefWindowProcA, 0, 0, 0, 0, 0, 0, 0, TITLE };
   RegisterClassA(&window_class);
 
-  HWND window = CreateWindowExA(0, TITLE, TITLE, WS_POPUP | WS_MAXIMIZE | WS_VISIBLE, 0, 0, 0, 0, NULL, NULL, NULL, NULL);
+  HWND window = CreateWindowExA(0, TITLE, TITLE, WS_POPUP | WS_MAXIMIZE | WS_VISIBLE, 0, 0, 0, 0, nullptr, nullptr, nullptr, nullptr);
 
-  D3D_FEATURE_LEVEL feature_levels[] = { D3D_FEATURE_LEVEL_11_0 }; // D3D_FEATURE_LEVEL_11_1, D3D_FEATURE_LEVEL_11_2
+  D3D_FEATURE_LEVEL feature_levels[] = { D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_11_1 };
 
   DXGI_SWAP_CHAIN_DESC swap_chain_desc = {};
   swap_chain_desc.BufferDesc.Width  = 0;
@@ -46,7 +46,7 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE previous_instance, LPSTR cli, i
   ID3D11Device* device;
   ID3D11DeviceContext* device_context;
 
-  D3D11CreateDeviceAndSwapChain(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, D3D11_CREATE_DEVICE_BGRA_SUPPORT | D3D11_CREATE_DEVICE_DEBUG, feature_levels, ARRAYSIZE(feature_levels), D3D11_SDK_VERSION, &swap_chain_desc, &swapchain, &device, NULL, &device_context); // D3D11_CREATE_DEVICE_DEBUG is optional, but provides useful d3d11 debug output
+  D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, D3D11_CREATE_DEVICE_BGRA_SUPPORT | D3D11_CREATE_DEVICE_DEBUG, feature_levels, ARRAYSIZE(feature_levels), D3D11_SDK_VERSION, &swap_chain_desc, &swapchain, &device, nullptr, &device_context); // D3D11_CREATE_DEVICE_DEBUG is optional, but provides useful d3d11 debug output
 
   swapchain->GetDesc(&swap_chain_desc); // update swap_chain_desc with actual window size
 
