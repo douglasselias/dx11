@@ -23,7 +23,8 @@ matrix operator*(const matrix& m1, const matrix& m2);
 
 #define TITLE "DX11"
 
-int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
+int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
+{
   WNDCLASSA window_class = {0, DefWindowProcA, 0, 0, 0, 0, 0, 0, 0, TITLE };
   RegisterClassA(&window_class);
 
