@@ -98,3 +98,37 @@ void create_render_target_view_and_depth_stencil_view(Renderer* renderer) {
 
   renderer->depthbufferDSV = depthbufferDSV;
 }
+
+/// @todo: This flag D3DCOMPILE_WARNINGS_ARE_ERRORS does not compile, but there are no errors on the console. Maybe I need to check for errors.
+// UINT shader_compilation_flags = D3DCOMPILE_DEBUG | D3DCOMPILE_WARNINGS_ARE_ERRORS;
+
+UINT shader_compilation_flags = D3DCOMPILE_DEBUG;
+// UINT shader_compilation_flags = D3DCOMPILE_OPTIMIZATION_LEVEL3;
+
+struct VertexShader {
+  ID3DBlob* vertexshaderCSO;
+  ID3D11VertexShader* vertexshader;
+};
+
+VertexShader create_vertex_shader(Renderer renderer, wchar_t* filename) {
+  ID3DBlob* vertexshaderCSO;
+  D3DCompileFromFile(filename, nullptr, nullptr, "VsMain", "vs_5_0", shader_compilation_flags, 0, &vertexshaderCSO, nullptr);
+
+  ID3D11VertexShader* vertexshader;
+  renderer.device->CreateVertexShader(vertexshaderCSO->GetBufferPointer(), vertexshaderCSO->GetBufferSize(), nullptr, &vertexshader);
+
+  VertexShader vertex_shader = {};
+  vertex_shader.vertexshaderCSO = vertexshaderCSO;
+  vertex_shader.vertexshader = vertexshader;
+
+  return vertex_shader;
+}
+
+ID3D11PixelShader* create_pixel_shader(Renderer renderer, wchar_t* filename) {
+  ID3DBlob* pixelshaderCSO;
+  D3DCompileFromFile(filename, nullptr, nullptr, "PsMain", "ps_5_0", shader_compilation_flags, 0, &pixelshaderCSO, nullptr);
+
+  ID3D11PixelShader* pixelshader;
+  renderer.device->CreatePixelShader(pixelshaderCSO->GetBufferPointer(), pixelshaderCSO->GetBufferSize(), nullptr, &pixelshader);
+  return pixelshader;
+}

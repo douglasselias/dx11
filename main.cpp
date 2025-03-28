@@ -17,11 +17,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
   create_render_target_view_and_depth_stencil_view(&renderer);
 
-  ID3DBlob* vertexshaderCSO;
-  D3DCompileFromFile(L"gpu.hlsl", nullptr, nullptr, "VsMain", "vs_5_0", 0, 0, &vertexshaderCSO, nullptr);
-
-  ID3D11VertexShader* vertexshader;
-  renderer.device->CreateVertexShader(vertexshaderCSO->GetBufferPointer(), vertexshaderCSO->GetBufferSize(), nullptr, &vertexshader);
+  VertexShader vs_struct = create_vertex_shader(renderer, L"gpu.hlsl");
 
   D3D11_INPUT_ELEMENT_DESC inputelementdesc[] = // maps to vertexdesc struct in gpu.hlsl via semantic names ("POS", "NOR", "TEX", "COL")
   {
@@ -32,15 +28,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
   };
 
   ID3D11InputLayout* inputlayout;
-  renderer.device->CreateInputLayout(inputelementdesc, ARRAYSIZE(inputelementdesc), vertexshaderCSO->GetBufferPointer(), vertexshaderCSO->GetBufferSize(), &inputlayout);
+  renderer.device->CreateInputLayout(inputelementdesc, ARRAYSIZE(inputelementdesc), vs_struct.vertexshaderCSO->GetBufferPointer(), vs_struct.vertexshaderCSO->GetBufferSize(), &inputlayout);
 
-  ///////////////////////////////////////////////////////////////////////////////////////////////
-
-  ID3DBlob* pixelshaderCSO;
-  D3DCompileFromFile(L"gpu.hlsl", nullptr, nullptr, "PsMain", "ps_5_0", 0, 0, &pixelshaderCSO, nullptr);
-
-  ID3D11PixelShader* pixelshader;
-  renderer.device->CreatePixelShader(pixelshaderCSO->GetBufferPointer(), pixelshaderCSO->GetBufferSize(), nullptr, &pixelshader);
+  ID3D11PixelShader* pixelshader = create_pixel_shader(renderer, L"gpu.hlsl");
 
   ///////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -196,7 +186,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     renderer.device_context->IASetVertexBuffers(0, 1, &vertexbuffer, &stride, &offset);
     renderer.device_context->IASetIndexBuffer(indexbuffer, DXGI_FORMAT_R32_UINT, 0);
 
-    renderer.device_context->VSSetShader(vertexshader, nullptr, 0);
+    renderer.device_context->VSSetShader(vs_struct.vertexshader, nullptr, 0);
     renderer.device_context->VSSetConstantBuffers(0, 1, &constantbuffer);
 
     renderer.device_context->RSSetViewports(1, &renderer.viewport);
