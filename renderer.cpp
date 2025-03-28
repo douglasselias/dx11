@@ -169,3 +169,19 @@ ID3D11DepthStencilState* create_depth_stencil_state(Renderer renderer) {
 
   return depthstencilstate;
 }
+
+struct Constants { matrix transform, projection; float3 lightvector; };
+
+ID3D11Buffer* create_constant_buffer(Renderer renderer) {
+  D3D11_BUFFER_DESC constantbufferdesc = {};
+  /// @todo: Might be worth to have ByteWidth as a parameter, and the alignment be a macro.
+  constantbufferdesc.ByteWidth      = sizeof(Constants) + 0xf & 0xfffffff0; // ensure constant buffer size is multiple of 16 bytes
+  constantbufferdesc.Usage          = D3D11_USAGE_DYNAMIC; // will be updated from CPU every frame
+  constantbufferdesc.BindFlags      = D3D11_BIND_CONSTANT_BUFFER;
+  constantbufferdesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+
+  ID3D11Buffer* constantbuffer;
+  renderer.device->CreateBuffer(&constantbufferdesc, nullptr, &constantbuffer);
+
+  return constantbuffer;
+}
