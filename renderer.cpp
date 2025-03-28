@@ -28,6 +28,9 @@ struct Renderer {
   ID3D11Device* device;
   ID3D11DeviceContext* device_context;
   D3D11_VIEWPORT viewport;
+
+  ID3D11RenderTargetView* framebufferRTV;
+  ID3D11DepthStencilView* depthbufferDSV;
 };
 
 Renderer create_renderer(HWND window) {
@@ -66,4 +69,32 @@ Renderer create_renderer(HWND window) {
   renderer.viewport = viewport;
 
   return renderer;
+}
+
+void create_render_target_view_and_depth_stencil_view(Renderer* renderer) {
+  ID3D11Texture2D* framebuffer;
+  renderer->swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&framebuffer); // get buffer from swapchain..
+
+  D3D11_RENDER_TARGET_VIEW_DESC framebufferRTVdesc = {}; // (needed for SRGB framebuffer when using FLIP model swap effect)
+  framebufferRTVdesc.Format        = DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
+  framebufferRTVdesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+
+  ID3D11RenderTargetView* framebufferRTV;
+  renderer->device->CreateRenderTargetView(framebuffer, &framebufferRTVdesc, &framebufferRTV); // ..and put a render target view on it
+
+  renderer->framebufferRTV = framebufferRTV;
+
+  D3D11_TEXTURE2D_DESC depth_buffer_desc;
+  framebuffer->GetDesc(&depth_buffer_desc); // copy framebuffer properties; they're mostly the same
+
+  depth_buffer_desc.Format    = DXGI_FORMAT_D24_UNORM_S8_UINT;
+  depth_buffer_desc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+
+  ID3D11Texture2D* depthbuffer;
+  renderer->device->CreateTexture2D(&depth_buffer_desc, nullptr, &depthbuffer);
+
+  ID3D11DepthStencilView* depthbufferDSV;
+  renderer->device->CreateDepthStencilView(depthbuffer, nullptr, &depthbufferDSV);
+
+  renderer->depthbufferDSV = depthbufferDSV;
 }

@@ -15,31 +15,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
   Renderer renderer = create_renderer(window);
 
-  ID3D11Texture2D* framebuffer;
-  renderer.swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&framebuffer); // get buffer from swapchain..
-
-  D3D11_RENDER_TARGET_VIEW_DESC framebufferRTVdesc = {}; // (needed for SRGB framebuffer when using FLIP model swap effect)
-  framebufferRTVdesc.Format        = DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
-  framebufferRTVdesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
-
-  ID3D11RenderTargetView* framebufferRTV;
-  renderer.device->CreateRenderTargetView(framebuffer, &framebufferRTVdesc, &framebufferRTV); // ..and put a render target view on it
-
-  ///////////////////////////////////////////////////////////////////////////////////////////////
-
-  D3D11_TEXTURE2D_DESC depth_buffer_desc;
-  framebuffer->GetDesc(&depth_buffer_desc); // copy framebuffer properties; they're mostly the same
-
-  depth_buffer_desc.Format    = DXGI_FORMAT_D24_UNORM_S8_UINT;
-  depth_buffer_desc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-
-  ID3D11Texture2D* depthbuffer;
-  renderer.device->CreateTexture2D(&depth_buffer_desc, nullptr, &depthbuffer);
-
-  ID3D11DepthStencilView* depthbufferDSV;
-  renderer.device->CreateDepthStencilView(depthbuffer, nullptr, &depthbufferDSV);
-
-  ///////////////////////////////////////////////////////////////////////////////////////////////
+  create_render_target_view_and_depth_stencil_view(&renderer);
 
   ID3DBlob* vertexshaderCSO;
   D3DCompileFromFile(L"gpu.hlsl", nullptr, nullptr, "VsMain", "vs_5_0", 0, 0, &vertexshaderCSO, nullptr);
@@ -212,8 +188,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     ///////////////////////////////////////////////////////////////////////////////////////////
 
-    renderer.device_context->ClearRenderTargetView(framebufferRTV, clearcolor);
-    renderer.device_context->ClearDepthStencilView(depthbufferDSV, D3D11_CLEAR_DEPTH, 1.0f, 0);
+    renderer.device_context->ClearRenderTargetView(renderer.framebufferRTV, clearcolor);
+    renderer.device_context->ClearDepthStencilView(renderer.depthbufferDSV, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
     renderer.device_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     renderer.device_context->IASetInputLayout(inputlayout);
@@ -230,7 +206,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     renderer.device_context->PSSetShaderResources(0, 1, &textureSRV);
     renderer.device_context->PSSetSamplers(0, 1, &samplerstate);
 
-    renderer.device_context->OMSetRenderTargets(1, &framebufferRTV, depthbufferDSV);
+    renderer.device_context->OMSetRenderTargets(1, &renderer.framebufferRTV, renderer.depthbufferDSV);
     renderer.device_context->OMSetDepthStencilState(depthstencilstate, 0);
     renderer.device_context->OMSetBlendState(nullptr, nullptr, 0xffffffff); // use default blend mode (i.e. no blending)
 
