@@ -32,36 +32,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
   ID3D11PixelShader* pixelshader = create_pixel_shader(renderer, L"gpu.hlsl");
 
-  ///////////////////////////////////////////////////////////////////////////////////////////////
+  ID3D11RasterizerState* rasterizerstate = create_rasterizer(renderer);
 
-  D3D11_RASTERIZER_DESC rasterizerdesc = {};
-  rasterizerdesc.FillMode = D3D11_FILL_SOLID;
-  rasterizerdesc.CullMode = D3D11_CULL_BACK;
+  ID3D11SamplerState* samplerstate = create_sampler_state(renderer);
 
-  ID3D11RasterizerState* rasterizerstate;
-  renderer.device->CreateRasterizerState(&rasterizerdesc, &rasterizerstate);
-
-  ///////////////////////////////////////////////////////////////////////////////////////////////
-
-  D3D11_SAMPLER_DESC samplerdesc = {};
-  samplerdesc.Filter         = D3D11_FILTER_MIN_MAG_MIP_POINT;
-  samplerdesc.AddressU       = D3D11_TEXTURE_ADDRESS_WRAP;
-  samplerdesc.AddressV       = D3D11_TEXTURE_ADDRESS_WRAP;
-  samplerdesc.AddressW       = D3D11_TEXTURE_ADDRESS_WRAP;
-  samplerdesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
-
-  ID3D11SamplerState* samplerstate;
-  renderer.device->CreateSamplerState(&samplerdesc, &samplerstate);
-
-  ///////////////////////////////////////////////////////////////////////////////////////////////
-
-  D3D11_DEPTH_STENCIL_DESC depthstencildesc = {};
-  depthstencildesc.DepthEnable    = TRUE;
-  depthstencildesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-  depthstencildesc.DepthFunc      = D3D11_COMPARISON_LESS;
-
-  ID3D11DepthStencilState* depthstencilstate;
-  renderer.device->CreateDepthStencilState(&depthstencildesc, &depthstencilstate);
+  ID3D11DepthStencilState* depthstencilstate = create_depth_stencil_state(renderer);
 
   ///////////////////////////////////////////////////////////////////////////////////////////////
 

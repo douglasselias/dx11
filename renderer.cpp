@@ -132,3 +132,40 @@ ID3D11PixelShader* create_pixel_shader(Renderer renderer, wchar_t* filename) {
   renderer.device->CreatePixelShader(pixelshaderCSO->GetBufferPointer(), pixelshaderCSO->GetBufferSize(), nullptr, &pixelshader);
   return pixelshader;
 }
+
+ID3D11RasterizerState* create_rasterizer(Renderer renderer) {
+  D3D11_RASTERIZER_DESC rasterizerdesc = {};
+  rasterizerdesc.FillMode = D3D11_FILL_SOLID;
+  rasterizerdesc.CullMode = D3D11_CULL_BACK;
+
+  ID3D11RasterizerState* rasterizerstate;
+  renderer.device->CreateRasterizerState(&rasterizerdesc, &rasterizerstate);
+
+  return rasterizerstate;
+}
+
+ID3D11SamplerState* create_sampler_state(Renderer renderer) {
+  D3D11_SAMPLER_DESC samplerdesc = {};
+  samplerdesc.Filter         = D3D11_FILTER_MIN_MAG_MIP_POINT;
+  samplerdesc.AddressU       = D3D11_TEXTURE_ADDRESS_WRAP;
+  samplerdesc.AddressV       = D3D11_TEXTURE_ADDRESS_WRAP;
+  samplerdesc.AddressW       = D3D11_TEXTURE_ADDRESS_WRAP;
+  samplerdesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+
+  ID3D11SamplerState* samplerstate;
+  renderer.device->CreateSamplerState(&samplerdesc, &samplerstate);
+
+  return samplerstate;
+}
+
+ID3D11DepthStencilState* create_depth_stencil_state(Renderer renderer) {
+  D3D11_DEPTH_STENCIL_DESC depthstencildesc = {};
+  depthstencildesc.DepthEnable    = TRUE;
+  depthstencildesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+  depthstencildesc.DepthFunc      = D3D11_COMPARISON_LESS;
+
+  ID3D11DepthStencilState* depthstencilstate;
+  renderer.device->CreateDepthStencilState(&depthstencildesc, &depthstencilstate);
+
+  return depthstencilstate;
+}
