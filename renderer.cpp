@@ -1,17 +1,3 @@
-#pragma comment(lib, "user32")
-#pragma comment(lib, "d3d11")
-#pragma comment(lib, "d3dcompiler")
-
-#pragma warning(push)
-#pragma warning(disable: 4061)
-#pragma warning(disable: 4820)
-#pragma warning(disable: 4365)
-#pragma warning(disable: 4668)
-#include <windows.h>
-#include <d3d11.h>
-#include <d3dcompiler.h>
-#pragma warning(pop)
-
 HWND create_window(const char* title) {
   /// @todo: Add a proper window proc.
   WNDCLASSA window_class = {0, DefWindowProcA, 0, 0, 0, 0, 0, 0, 0, title };
@@ -184,4 +170,29 @@ ID3D11Buffer* create_constant_buffer(Renderer renderer) {
   renderer.device->CreateBuffer(&constantbufferdesc, nullptr, &constantbuffer);
 
   return constantbuffer;
+}
+
+ID3D11ShaderResourceView* create_texture_shader_resource_view(Renderer renderer) {
+  D3D11_TEXTURE2D_DESC texturedesc = {};
+  /// @todo: Might be worth to have the width and height as parameters.
+  texturedesc.Width              = TEXTURE_WIDTH;  // in xube.h
+  texturedesc.Height             = TEXTURE_HEIGHT; // in xube.h
+  texturedesc.MipLevels          = 1;
+  texturedesc.ArraySize          = 1;
+  texturedesc.Format             = DXGI_FORMAT_B8G8R8A8_UNORM_SRGB; // same as framebuffer(view)
+  texturedesc.SampleDesc.Count   = 1;
+  texturedesc.Usage              = D3D11_USAGE_IMMUTABLE; // will never be updated
+  texturedesc.BindFlags          = D3D11_BIND_SHADER_RESOURCE;
+
+  D3D11_SUBRESOURCE_DATA textureSRD = {};
+  textureSRD.pSysMem     = texturedata; // in xube.h
+  textureSRD.SysMemPitch = TEXTURE_WIDTH * sizeof(UINT); // 1 UINT = 4 bytes per pixel, 0xAARRGGBB
+
+  ID3D11Texture2D* texture;
+  renderer.device->CreateTexture2D(&texturedesc, &textureSRD, &texture);
+
+  ID3D11ShaderResourceView* textureSRV;
+  renderer.device->CreateShaderResourceView(texture, nullptr, &textureSRV);
+
+  return textureSRV;
 }
