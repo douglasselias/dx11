@@ -9,7 +9,8 @@ HWND create_window(const char* title)
   return window;
 }
 
-struct Renderer {
+struct Renderer
+{
   DXGI_SWAP_CHAIN_DESC swap_chain_desc;
   IDXGISwapChain* swapchain;
   ID3D11Device* device;
@@ -94,7 +95,8 @@ void create_render_target_view_and_depth_stencil_view(Renderer* renderer)
 UINT shader_compilation_flags = D3DCOMPILE_DEBUG;
 // UINT shader_compilation_flags = D3DCOMPILE_OPTIMIZATION_LEVEL3;
 
-struct VertexShader {
+struct VertexShader
+{
   ID3DBlob* vertexshaderCSO;
   ID3D11VertexShader* vertexshader;
 };
