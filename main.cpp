@@ -54,8 +54,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
   ID3D11Buffer* indexbuffer = create_index_buffer(renderer);
 
-  ///////////////////////////////////////////////////////////////////////////////////////////////
-
   FLOAT clearcolor[4] = { 0.025f, 0.025f, 0.025f, 1.0f };
 
   UINT stride = 11 * sizeof(float); // vertex size (11 floats: float3 position, float3 normal, float2 texcoord, float3 color)
@@ -81,8 +79,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
       if (msg.message == WM_KEYDOWN) return 0; // PRESS ANY KEY TO EXIT
       DispatchMessageA(&msg);
     }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////
 
     matrix rotatex   = { 1, 0, 0, 0, 0, (float)cos(modelrotation.x), -(float)sin(modelrotation.x), 0, 0, (float)sin(modelrotation.x), (float)cos(modelrotation.x), 0, 0, 0, 0, 1 };
     matrix rotatey   = { (float)cos(modelrotation.y), 0, (float)sin(modelrotation.y), 0, 0, 1, 0, 0, -(float)sin(modelrotation.y), 0, (float)cos(modelrotation.y), 0, 0, 0, 0, 1 };
