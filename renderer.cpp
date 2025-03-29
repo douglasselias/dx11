@@ -1,4 +1,5 @@
-HWND create_window(const char* title) {
+HWND create_window(const char* title)
+{
   /// @todo: Add a proper window proc.
   WNDCLASSA window_class = {0, DefWindowProcA, 0, 0, 0, 0, 0, 0, 0, title };
   RegisterClassA(&window_class);
@@ -19,7 +20,8 @@ struct Renderer {
   ID3D11DepthStencilView* depthbufferDSV;
 };
 
-Renderer create_renderer(HWND window) {
+Renderer create_renderer(HWND window)
+{
   Renderer renderer = {};
 
   DXGI_MODE_DESC BufferDesc = {};
@@ -57,7 +59,8 @@ Renderer create_renderer(HWND window) {
   return renderer;
 }
 
-void create_render_target_view_and_depth_stencil_view(Renderer* renderer) {
+void create_render_target_view_and_depth_stencil_view(Renderer* renderer)
+{
   ID3D11Texture2D* framebuffer;
   renderer->swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&framebuffer); // get buffer from swapchain..
 
@@ -96,7 +99,8 @@ struct VertexShader {
   ID3D11VertexShader* vertexshader;
 };
 
-VertexShader create_vertex_shader(Renderer renderer, wchar_t* filename) {
+VertexShader create_vertex_shader(Renderer renderer, wchar_t* filename)
+{
   ID3DBlob* vertexshaderCSO;
   D3DCompileFromFile(filename, nullptr, nullptr, "VsMain", "vs_5_0", shader_compilation_flags, 0, &vertexshaderCSO, nullptr);
 
@@ -110,7 +114,8 @@ VertexShader create_vertex_shader(Renderer renderer, wchar_t* filename) {
   return vertex_shader;
 }
 
-ID3D11PixelShader* create_pixel_shader(Renderer renderer, wchar_t* filename) {
+ID3D11PixelShader* create_pixel_shader(Renderer renderer, wchar_t* filename)
+{
   ID3DBlob* pixelshaderCSO;
   D3DCompileFromFile(filename, nullptr, nullptr, "PsMain", "ps_5_0", shader_compilation_flags, 0, &pixelshaderCSO, nullptr);
 
@@ -119,7 +124,8 @@ ID3D11PixelShader* create_pixel_shader(Renderer renderer, wchar_t* filename) {
   return pixelshader;
 }
 
-ID3D11RasterizerState* create_rasterizer(Renderer renderer) {
+ID3D11RasterizerState* create_rasterizer(Renderer renderer)
+{
   D3D11_RASTERIZER_DESC rasterizerdesc = {};
   rasterizerdesc.FillMode = D3D11_FILL_SOLID;
   rasterizerdesc.CullMode = D3D11_CULL_BACK;
@@ -130,7 +136,8 @@ ID3D11RasterizerState* create_rasterizer(Renderer renderer) {
   return rasterizerstate;
 }
 
-ID3D11SamplerState* create_sampler_state(Renderer renderer) {
+ID3D11SamplerState* create_sampler_state(Renderer renderer)
+{
   D3D11_SAMPLER_DESC samplerdesc = {};
   samplerdesc.Filter         = D3D11_FILTER_MIN_MAG_MIP_POINT;
   samplerdesc.AddressU       = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -144,7 +151,8 @@ ID3D11SamplerState* create_sampler_state(Renderer renderer) {
   return samplerstate;
 }
 
-ID3D11DepthStencilState* create_depth_stencil_state(Renderer renderer) {
+ID3D11DepthStencilState* create_depth_stencil_state(Renderer renderer)
+{
   D3D11_DEPTH_STENCIL_DESC depthstencildesc = {};
   depthstencildesc.DepthEnable    = TRUE;
   depthstencildesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
@@ -158,7 +166,8 @@ ID3D11DepthStencilState* create_depth_stencil_state(Renderer renderer) {
 
 struct Constants { matrix transform, projection; float3 lightvector; };
 
-ID3D11Buffer* create_constant_buffer(Renderer renderer) {
+ID3D11Buffer* create_constant_buffer(Renderer renderer)
+{
   D3D11_BUFFER_DESC constantbufferdesc = {};
   /// @todo: Might be worth to have ByteWidth as a parameter, and the alignment be a macro.
   constantbufferdesc.ByteWidth      = sizeof(Constants) + 0xf & 0xfffffff0; // ensure constant buffer size is multiple of 16 bytes
@@ -172,7 +181,8 @@ ID3D11Buffer* create_constant_buffer(Renderer renderer) {
   return constantbuffer;
 }
 
-ID3D11ShaderResourceView* create_texture_shader_resource_view(Renderer renderer) {
+ID3D11ShaderResourceView* create_texture_shader_resource_view(Renderer renderer)
+{
   D3D11_TEXTURE2D_DESC texturedesc = {};
   /// @todo: Might be worth to have the width and height as parameters.
   texturedesc.Width              = TEXTURE_WIDTH;  // in xube.h
@@ -197,7 +207,8 @@ ID3D11ShaderResourceView* create_texture_shader_resource_view(Renderer renderer)
   return textureSRV;
 }
 
-ID3D11Buffer* create_vertex_buffer(Renderer renderer) {
+ID3D11Buffer* create_vertex_buffer(Renderer renderer)
+{
   D3D11_BUFFER_DESC vertexbufferdesc = {};
   vertexbufferdesc.ByteWidth = sizeof(vertexdata);
   vertexbufferdesc.Usage     = D3D11_USAGE_IMMUTABLE; // will never be updated 
@@ -211,7 +222,8 @@ ID3D11Buffer* create_vertex_buffer(Renderer renderer) {
   return vertexbuffer;
 }
 
-ID3D11Buffer* create_index_buffer(Renderer renderer) {
+ID3D11Buffer* create_index_buffer(Renderer renderer)
+{
   D3D11_BUFFER_DESC indexbufferdesc = {};
   indexbufferdesc.ByteWidth = sizeof(indexdata);
   indexbufferdesc.Usage     = D3D11_USAGE_IMMUTABLE; // will never be updated
@@ -223,4 +235,82 @@ ID3D11Buffer* create_index_buffer(Renderer renderer) {
   renderer.device->CreateBuffer(&indexbufferdesc, &indexbufferSRD, &indexbuffer);
 
   return indexbuffer;
+}
+
+matrix create_projection_matrix(float width, float height, float near, float far)
+{
+  float aspect_ratio = width / height;
+  float h = 1.0f;
+
+  return
+  {
+    2 * near / aspect_ratio, 0,            0,                         0,
+    0,                       2 * near / h, 0,                         0,
+    0,                       0,            far / (far - near),        1,
+    0,                       0,            near * far / (near - far), 0,
+  };
+}
+
+matrix create_rotation_x_matrix(float angle)
+{
+  float sine   = sin(angle);
+  float cosine = cos(angle);
+
+  return
+  {
+    1, 0,       0,      0,
+    0, cosine, -sine,   0,
+    0, sine,    cosine, 0,
+    0, 0,       0,      1,
+  };
+}
+
+matrix create_rotation_y_matrix(float angle)
+{
+  float sine   = sin(angle);
+  float cosine = cos(angle);
+
+  return
+  {
+    cosine, 0, sine,   0,
+    0,      1, 0,      0,
+    -sine,  0, cosine, 0,
+    0,      0, 0,      1,
+  };
+}
+
+matrix create_rotation_z_matrix(float angle)
+{
+  float sine   = sin(angle);
+  float cosine = cos(angle);
+
+  return
+  {
+    cosine, -sine,   0, 0,
+    sine,    cosine, 0, 0,
+    0,       0,      1, 0,
+    0,       0,      0, 1,
+  };
+}
+
+matrix create_scale_matrix(float3 scale_vector)
+{
+  return
+  {
+    scale_vector.x, 0,              0,              0,
+    0,              scale_vector.y, 0,              0,
+    0,              0,              scale_vector.z, 0,
+    0,              0,              0,              1,
+  };
+}
+
+matrix create_translation_matrix(float3 translation_vector)
+{
+  return
+  {
+    1,                    0,                    0,                    0,
+    0,                    1,                    0,                    0,
+    0,                    0,                    1,                    0,
+    translation_vector.x, translation_vector.y, translation_vector.z, 1,
+  };
 }

@@ -1,3 +1,5 @@
+#define WIN32_LEAN_AND_MEAN
+
 #pragma comment(lib, "user32")
 #pragma comment(lib, "d3d11")
 #pragma comment(lib, "d3dcompiler")
@@ -12,10 +14,13 @@
 #include <d3dcompiler.h>
 #pragma warning(pop)
 
+#undef near
+#undef far
+
+#include <math.h>
 #include "types.cpp"
 #include "xube.h"
 #include "renderer.cpp"
-#include <math.h>
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
@@ -59,12 +64,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
   UINT stride = 11 * sizeof(float); // vertex size (11 floats: float3 position, float3 normal, float2 texcoord, float3 color)
   UINT offset = 0;
 
-  ///////////////////////////////////////////////////////////////////////////////////////////////
-
-  float w = renderer.viewport.Width / renderer.viewport.Height; // width (aspect ratio)
-  float h = 1.0f;                             // height
-  float n = 1.0f;                             // near
-  float f = 9.0f;                             // far
+  float near = 1.0f;
+  float far  = 9.0f;
+  matrix projection_matrix = create_projection_matrix(renderer.viewport.Width, renderer.viewport.Height, near, far);
 
   float3 modelrotation    = { 0.0f, 0.0f, 0.0f };
   float3 modelscale       = { 1.0f, 1.0f, 1.0f };
@@ -80,11 +82,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
       DispatchMessageA(&msg);
     }
 
-    matrix rotatex   = { 1, 0, 0, 0, 0, (float)cos(modelrotation.x), -(float)sin(modelrotation.x), 0, 0, (float)sin(modelrotation.x), (float)cos(modelrotation.x), 0, 0, 0, 0, 1 };
-    matrix rotatey   = { (float)cos(modelrotation.y), 0, (float)sin(modelrotation.y), 0, 0, 1, 0, 0, -(float)sin(modelrotation.y), 0, (float)cos(modelrotation.y), 0, 0, 0, 0, 1 };
-    matrix rotatez   = { (float)cos(modelrotation.z), -(float)sin(modelrotation.z), 0, 0, (float)sin(modelrotation.z), (float)cos(modelrotation.z), 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
-    matrix scale     = { modelscale.x, 0, 0, 0, 0, modelscale.y, 0, 0, 0, 0, modelscale.z, 0, 0, 0, 0, 1 };
-    matrix translate = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, modeltranslation.x, modeltranslation.y, modeltranslation.z, 1 };
+    matrix rotatex   = create_rotation_x_matrix(modelrotation.x);
+    matrix rotatey   = create_rotation_y_matrix(modelrotation.y);
+    matrix rotatez   = create_rotation_z_matrix(modelrotation.z);
+    matrix scale     = create_scale_matrix(modelscale);
+    matrix translate = create_translation_matrix(modeltranslation);
 
     modelrotation.x += 0.005f;
     modelrotation.y += 0.009f;
@@ -99,7 +101,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
       Constants* constants = (Constants*)constantbufferMSR.pData;
 
       constants->transform   = rotatex * rotatey * rotatez * scale * translate;
-      constants->projection  = { 2 * n / w, 0, 0, 0, 0, 2 * n / h, 0, 0, 0, 0, f / (f - n), 1, 0, 0, n * f / (n - f), 0 };
+      constants->projection  = projection_matrix;
       constants->lightvector = { 1.0f, -1.0f, 1.0f };
     }
     renderer.device_context->Unmap(constantbuffer, 0);
