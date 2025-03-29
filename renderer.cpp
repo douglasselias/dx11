@@ -196,3 +196,31 @@ ID3D11ShaderResourceView* create_texture_shader_resource_view(Renderer renderer)
 
   return textureSRV;
 }
+
+ID3D11Buffer* create_vertex_buffer(Renderer renderer) {
+  D3D11_BUFFER_DESC vertexbufferdesc = {};
+  vertexbufferdesc.ByteWidth = sizeof(vertexdata);
+  vertexbufferdesc.Usage     = D3D11_USAGE_IMMUTABLE; // will never be updated 
+  vertexbufferdesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+
+  D3D11_SUBRESOURCE_DATA vertexbufferSRD = { vertexdata }; // in xube.h
+
+  ID3D11Buffer* vertexbuffer;
+  renderer.device->CreateBuffer(&vertexbufferdesc, &vertexbufferSRD, &vertexbuffer);
+
+  return vertexbuffer;
+}
+
+ID3D11Buffer* create_index_buffer(Renderer renderer) {
+  D3D11_BUFFER_DESC indexbufferdesc = {};
+  indexbufferdesc.ByteWidth = sizeof(indexdata);
+  indexbufferdesc.Usage     = D3D11_USAGE_IMMUTABLE; // will never be updated
+  indexbufferdesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+
+  D3D11_SUBRESOURCE_DATA indexbufferSRD = { indexdata }; // in xube.h
+
+  ID3D11Buffer* indexbuffer;
+  renderer.device->CreateBuffer(&indexbufferdesc, &indexbufferSRD, &indexbuffer);
+
+  return indexbuffer;
+}

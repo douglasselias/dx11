@@ -50,29 +50,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
   ID3D11ShaderResourceView* textureSRV = create_texture_shader_resource_view(renderer);
 
-  ///////////////////////////////////////////////////////////////////////////////////////////////
+  ID3D11Buffer* vertexbuffer = create_vertex_buffer(renderer);
 
-  D3D11_BUFFER_DESC vertexbufferdesc = {};
-  vertexbufferdesc.ByteWidth = sizeof(vertexdata);
-  vertexbufferdesc.Usage     = D3D11_USAGE_IMMUTABLE; // will never be updated 
-  vertexbufferdesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-
-  D3D11_SUBRESOURCE_DATA vertexbufferSRD = { vertexdata }; // in xube.h
-
-  ID3D11Buffer* vertexbuffer;
-  renderer.device->CreateBuffer(&vertexbufferdesc, &vertexbufferSRD, &vertexbuffer);
-
-  ///////////////////////////////////////////////////////////////////////////////////////////////
-
-  D3D11_BUFFER_DESC indexbufferdesc = {};
-  indexbufferdesc.ByteWidth = sizeof(indexdata);
-  indexbufferdesc.Usage     = D3D11_USAGE_IMMUTABLE; // will never be updated
-  indexbufferdesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-
-  D3D11_SUBRESOURCE_DATA indexbufferSRD = { indexdata }; // in xube.h
-
-  ID3D11Buffer* indexbuffer;
-  renderer.device->CreateBuffer(&indexbufferdesc, &indexbufferSRD, &indexbuffer);
+  ID3D11Buffer* indexbuffer = create_index_buffer(renderer);
 
   ///////////////////////////////////////////////////////////////////////////////////////////////
 
