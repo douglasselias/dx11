@@ -327,3 +327,9 @@ void update_constant_buffer(Renderer renderer, ID3D11Buffer* constantbuffer, Con
 
   renderer.device_context->Unmap(constantbuffer, 0);
 }
+
+void clear_screen(Renderer renderer, float clearcolor[4])
+{
+  renderer.device_context->ClearRenderTargetView(renderer.framebufferRTV, clearcolor);
+  renderer.device_context->ClearDepthStencilView(renderer.depthbufferDSV, D3D11_CLEAR_DEPTH, 1.0f, 0);
+}

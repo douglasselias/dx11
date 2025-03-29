@@ -99,8 +99,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     ///////////////////////////////////////////////////////////////////////////////////////////
 
-    renderer.device_context->ClearRenderTargetView(renderer.framebufferRTV, clearcolor);
-    renderer.device_context->ClearDepthStencilView(renderer.depthbufferDSV, D3D11_CLEAR_DEPTH, 1.0f, 0);
+    clear_screen(renderer, clearcolor);
 
     renderer.device_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     renderer.device_context->IASetInputLayout(inputlayout);
