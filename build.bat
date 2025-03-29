@@ -14,6 +14,10 @@ pushd .\build
 
 cl /nologo /O2 /diagnostics:caret /sdl /Wall /WX /W4 /wd4189 /wd4996 /wd4100 /wd4244 /wd4255 /wd5045 /wd4711 /wd4710 /Wv:18 ..\main.cpp
 
-popd
-
-build\main
+if %ERRORLEVEL% equ 0 (
+  popd
+  build\main
+) else (
+  popd
+  echo "Error"
+)

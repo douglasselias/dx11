@@ -317,6 +317,48 @@ matrix create_translation_matrix(float3 translation_vector)
   };
 }
 
+float3 normalize(float3 v)
+{
+  float length = sqrtf(v.x*v.x + v.y*v.y + v.z*v.z);
+
+  if (length != 0.0f)
+  {
+    float ilength = 1.0f / length;
+    v.x *= ilength;
+    v.y *= ilength;
+    v.z *= ilength;
+  }
+
+  return v;
+}
+
+float3 cross(float3 v1, float3 v2)
+{
+  float3 result = { v1.y*v2.z - v1.z*v2.y, v1.z*v2.x - v1.x*v2.z, v1.x*v2.y - v1.y*v2.x };
+  return result;
+}
+
+float dot(float3 v1, float3 v2)
+{
+  float result = (v1.x * v2.x + v1.y * v2.y + v1.z * v2.z);
+  return result;
+}
+
+matrix create_view_matrix(float3 position, float3 target, float3 up)
+{
+  float3 zaxis = normalize(position - target);
+  float3 xaxis = normalize(cross(up, zaxis));
+  float3 yaxis = cross(zaxis, xaxis);
+
+  return
+  {
+    xaxis.x,                yaxis.x,               zaxis.x,              0,
+    xaxis.y,                yaxis.y,               zaxis.y,              0,
+    xaxis.z,                yaxis.z,               zaxis.z,              0,
+    -dot(xaxis, position), -dot(yaxis, position), -dot(zaxis, position), 1,
+  };
+}
+
 void update_constant_buffer(Renderer renderer, ID3D11Buffer* constantbuffer, Constants constants)
 {
   D3D11_MAPPED_SUBRESOURCE constantbufferMSR;

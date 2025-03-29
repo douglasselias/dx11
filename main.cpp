@@ -17,10 +17,181 @@
 #undef near
 #undef far
 
+#include <stdio.h>
 #include <math.h>
 #include "types.cpp"
 #include "xube.h"
 #include "renderer.cpp"
+
+#define PI 3.14159265358979323846f
+#define DEG2RAD (PI/180.0f)
+
+struct Camera
+{
+  float3 position;
+  float3 target;
+  float3 up;
+  float fovy;
+};
+
+float3 Vector3Scale(float3 v, float scalar)
+{
+  float3 result = { v.x*scalar, v.y*scalar, v.z*scalar };
+  return result;
+}
+
+float3 Vector3Add(float3 v1, float3 v2)
+{
+  float3 result = { v1.x + v2.x, v1.y + v2.y, v1.z + v2.z };
+  return result;
+}
+
+float3 GetCameraUp(Camera* camera)
+{
+  return camera->up;
+}
+
+void CameraMoveUp(Camera *camera, float distance)
+{
+  float3 up = GetCameraUp(camera);
+  up = Vector3Scale(up, distance);
+
+  camera->position = Vector3Add(camera->position, up);
+  camera->target   = Vector3Add(camera->target,   up);
+}
+
+float3 Vector3Subtract(float3 v1, float3 v2)
+{
+  float3 result = { v1.x - v2.x, v1.y - v2.y, v1.z - v2.z };
+  return result;
+}
+
+float3 Vector3RotateByAxisAngle(float3 v, float3 axis, float angle)
+{
+  // Using Euler-Rodrigues Formula
+  // Ref.: https://en.wikipedia.org/w/index.php?title=Euler%E2%80%93Rodrigues_formula
+
+  float3 result = v;
+
+  // Vector3Normalize(axis);
+  float length = sqrtf(axis.x*axis.x + axis.y*axis.y + axis.z*axis.z);
+  if (length == 0.0f) length = 1.0f;
+  float ilength = 1.0f/length;
+  axis.x *= ilength;
+  axis.y *= ilength;
+  axis.z *= ilength;
+
+  angle /= 2.0f;
+  float a = sinf(angle);
+  float b = axis.x*a;
+  float c = axis.y*a;
+  float d = axis.z*a;
+  a = cosf(angle);
+  float3 w = { b, c, d };
+
+  // Vector3CrossProduct(w, v)
+  float3 wv = { w.y*v.z - w.z*v.y, w.z*v.x - w.x*v.z, w.x*v.y - w.y*v.x };
+
+  // Vector3CrossProduct(w, wv)
+  float3 wwv = { w.y*wv.z - w.z*wv.y, w.z*wv.x - w.x*wv.z, w.x*wv.y - w.y*wv.x };
+
+  // Vector3Scale(wv, 2*a)
+  a *= 2;
+  wv.x *= a;
+  wv.y *= a;
+  wv.z *= a;
+
+  // Vector3Scale(wwv, 2)
+  wwv.x *= 2;
+  wwv.y *= 2;
+  wwv.z *= 2;
+
+  result.x += wv.x;
+  result.y += wv.y;
+  result.z += wv.z;
+
+  result.x += wwv.x;
+  result.y += wwv.y;
+  result.z += wwv.z;
+
+  return result;
+}
+
+void CameraYaw(Camera *camera, float angle)
+{
+  // Rotation axis
+  float3 up = GetCameraUp(camera);
+
+  // View vector
+  float3 targetPosition = Vector3Subtract(camera->target, camera->position);
+
+  // Rotate view vector around up axis
+  targetPosition = Vector3RotateByAxisAngle(targetPosition, up, angle);
+
+  camera->target = Vector3Add(camera->position, targetPosition);
+}
+
+float camera_yaw = 0;
+
+void UpdateCamera(Camera* camera, float deltaTime)
+{
+  // Calculate forward vector (normalized direction from position to target)
+  float3 forward = normalize(Vector3Subtract(camera->target, camera->position));
+
+  // Calculate right vector (perpendicular to forward and up)
+  float3 right = normalize(cross(forward, camera->up));
+
+  float speed = 4.75f * deltaTime;
+
+  if (GetAsyncKeyState('W') & 0x8000) // Move forward
+  {
+    float3 movement = Vector3Scale(forward, -speed);
+    camera->position = Vector3Add(camera->position, movement);
+    camera->target = Vector3Add(camera->target, movement);
+  }
+  if (GetAsyncKeyState('S') & 0x8000) // Move backward
+  {
+    float3 movement = Vector3Scale(forward, speed);
+    camera->position = Vector3Add(camera->position, movement);
+    camera->target = Vector3Add(camera->target, movement);
+  }
+  if (GetAsyncKeyState('A') & 0x8000) // Strafe left
+  {
+    float3 movement = Vector3Scale(right, -speed);
+    camera->position = Vector3Add(camera->position, movement);
+    camera->target = Vector3Add(camera->target, movement);
+  }
+  if (GetAsyncKeyState('D') & 0x8000) // Strafe right
+  {
+    float3 movement = Vector3Scale(right, speed);
+    camera->position = Vector3Add(camera->position, movement);
+    camera->target = Vector3Add(camera->target, movement);
+  }
+  if (GetAsyncKeyState('Z') & 0x8000) // Move up
+  {
+    float3 movement = Vector3Scale(camera->up, speed);
+    camera->position = Vector3Add(camera->position, movement);
+    camera->target = Vector3Add(camera->target, movement);
+  }
+  if (GetAsyncKeyState('X') & 0x8000) // Move down
+  {
+    float3 movement = Vector3Scale(camera->up, -speed);
+    camera->position = Vector3Add(camera->position, movement);
+    camera->target = Vector3Add(camera->target, movement);
+  }
+
+  float yaw_speed = 1;
+  if (GetAsyncKeyState('J') & 0x8000) // Rotate left
+  {
+    float rotationAmount = -yaw_speed * deltaTime;
+    CameraYaw(camera, rotationAmount);
+  }
+  if (GetAsyncKeyState('L') & 0x8000) // Rotate right
+  {
+    float rotationAmount = yaw_speed * deltaTime;
+    CameraYaw(camera, rotationAmount);
+  }
+}
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
@@ -65,7 +236,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
   UINT offset = 0;
 
   float near = 1.0f;
-  float far  = 9.0f;
+  float far  = 100.0f;
   matrix projection_matrix = create_projection_matrix(renderer.viewport.Width, renderer.viewport.Height, near, far);
 
   float3 modelrotation    = { 0.0f, 0.0f, 0.0f };
@@ -73,26 +244,44 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
   float3 modeltranslation = { 0.0f, 0.0f, 4.0f };
   float3 light_direction  = { 1.0f, -1.0f, 1.0f };
 
+  Camera camera = {};
+  camera.position = { 0.0f, 0.0f, 0.5f };
+  camera.target   = { 0.0f, 0.0f, 0.0f };
+  camera.up       = { 0.0f, 1.0f, 0.0f };
+
   while (true)
   {
     MSG msg;
 
     while (PeekMessageA(&msg, nullptr, 0, 0, PM_REMOVE))
     {
-      if (msg.message == WM_KEYDOWN) return 0; // PRESS ANY KEY TO EXIT
+      if (msg.message == WM_KEYDOWN)
+      {
+        float dt = 0.016f;
+        float speed = 4.75f;
+        switch (msg.wParam)
+        {
+          case VK_ESCAPE:
+          case VK_OEM_3: return 0;
+        }
+
+      }
       DispatchMessageA(&msg);
     }
+
+    UpdateCamera(&camera, 0.016f);
 
     matrix rotatex   = create_rotation_x_matrix(modelrotation.x);
     matrix rotatey   = create_rotation_y_matrix(modelrotation.y);
     matrix rotatez   = create_rotation_z_matrix(modelrotation.z);
     matrix scale     = create_scale_matrix(modelscale);
     matrix translate = create_translation_matrix(modeltranslation);
-    matrix transform = rotatex * rotatey * rotatez * scale * translate;
+    matrix view      = create_view_matrix(camera.position, camera.target, camera.up);
+    matrix transform = rotatex * rotatey * rotatez * scale * translate * view;
 
-    modelrotation.x += 0.005f;
-    modelrotation.y += 0.009f;
-    modelrotation.z += 0.001f;
+    // modelrotation.x += 0.005f;
+    // modelrotation.y += 0.009f;
+    // modelrotation.z += 0.001f;
 
     Constants constants = {transform, projection_matrix, light_direction};
     update_constant_buffer(renderer, constantbuffer, constants);

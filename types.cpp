@@ -1,7 +1,10 @@
 struct float3 { float x, y, z; };
 struct matrix { float m[4][4]; };
 
-// matrix operator*(const matrix& m1, const matrix& m2);
+float3 operator-(const float3& v1, const float3& v2)
+{
+  return { v1.x - v2.x, v1.y - v2.y, v1.z - v2.z };
+}
 
 matrix operator*(const matrix& m1, const matrix& m2)
 {
