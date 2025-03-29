@@ -71,6 +71,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
   float3 modelrotation    = { 0.0f, 0.0f, 0.0f };
   float3 modelscale       = { 1.0f, 1.0f, 1.0f };
   float3 modeltranslation = { 0.0f, 0.0f, 4.0f };
+  float3 light_direction  = { 1.0f, -1.0f, 1.0f };
 
   while (true)
   {
@@ -87,24 +88,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     matrix rotatez   = create_rotation_z_matrix(modelrotation.z);
     matrix scale     = create_scale_matrix(modelscale);
     matrix translate = create_translation_matrix(modeltranslation);
+    matrix transform = rotatex * rotatey * rotatez * scale * translate;
 
     modelrotation.x += 0.005f;
     modelrotation.y += 0.009f;
     modelrotation.z += 0.001f;
 
-    ///////////////////////////////////////////////////////////////////////////////////////////
-
-    D3D11_MAPPED_SUBRESOURCE constantbufferMSR;
-
-    renderer.device_context->Map(constantbuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &constantbufferMSR); // update constant buffer every frame
-    {
-      Constants* constants = (Constants*)constantbufferMSR.pData;
-
-      constants->transform   = rotatex * rotatey * rotatez * scale * translate;
-      constants->projection  = projection_matrix;
-      constants->lightvector = { 1.0f, -1.0f, 1.0f };
-    }
-    renderer.device_context->Unmap(constantbuffer, 0);
+    Constants constants = {transform, projection_matrix, light_direction};
+    update_constant_buffer(renderer, constantbuffer, constants);
 
     ///////////////////////////////////////////////////////////////////////////////////////////
 

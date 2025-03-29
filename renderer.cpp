@@ -314,3 +314,16 @@ matrix create_translation_matrix(float3 translation_vector)
     translation_vector.x, translation_vector.y, translation_vector.z, 1,
   };
 }
+
+void update_constant_buffer(Renderer renderer, ID3D11Buffer* constantbuffer, Constants constants)
+{
+  D3D11_MAPPED_SUBRESOURCE constantbufferMSR;
+  renderer.device_context->Map(constantbuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &constantbufferMSR);
+
+  Constants* constants_mapped   = (Constants*)constantbufferMSR.pData;
+  constants_mapped->transform   = constants.transform;
+  constants_mapped->projection  = constants.projection;
+  constants_mapped->lightvector = constants.lightvector;
+
+  renderer.device_context->Unmap(constantbuffer, 0);
+}
